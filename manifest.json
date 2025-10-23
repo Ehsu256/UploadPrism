@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "QoolPrism",
+  "short_name": "QP",
+  "version": "0.1",
+  "description": "QoL additions for PhotoPrism (https://github.com/photoprism/photoprism)",
+  "icons": {
+    "16": "icons/icon-16px.png"
+  },
+  "action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage"
+  ]
+}
