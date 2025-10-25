@@ -1,5 +1,5 @@
 # UploadPrism
-Browser extension for uploading images and videos to your PhotoPrism library via context menu.
+Browser extension for uploading images and videos from the internet to your PhotoPrism library via context menu.
 
 ## How to install
 1. Go to [releases](https://github.com/Ehsu256/UploadPrism/releases)
