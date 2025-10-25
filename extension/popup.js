@@ -1,7 +1,10 @@
-// GETTING USER'S SERVER INFO FROM FORM
+// GETTING USER'S SERVER INFO FROM FORM AND STORING IT LOCALLY
 const serverInfoForm = document.getElementById('serverInfoForm');
 
-serverInfoForm.addEventListener('submit', async () => {
+serverInfoForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  // Get info from fomr
   const photoprismUrl = document.getElementById('photoprismUrl').value;
   const authToken = document.getElementById('authToken').value;
   const serverInfo = {
@@ -29,8 +32,8 @@ serverInfoForm.addEventListener('submit', async () => {
 // CREATE CONTEXT MENUS
 async function createContextMenus() {
   chrome.contextMenus.create({
-    title: 'media',
-    contexts: ['image', 'video', 'audio'],
+    title: 'Upload to PhotoPrism',
+    contexts: ['image', 'video'],
     id: 'media'
   },
   function () {
