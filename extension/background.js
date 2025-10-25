@@ -15,7 +15,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
 
   // Naming the file with the correct extension to prevent "unsupported file extension" error in PhotoPrism
   const extension = blob.type.split('/')[1]; // Getting the file extension from MIME type
-  const fileName = 'QoolPrism.' + extension;
+  const fileName = 'UploadPrism.' + extension;
   const fileObject = new File([blob], fileName, { type: blob.type });
 
   // Creating FormData and appending the file object
@@ -24,7 +24,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   console.log('FILE INFORMATION:\n', formData.get('files'));
 
   // UPLOADING THE FILE
-  const uploadResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_QoolPrism', {
+  const uploadResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + authToken,
@@ -35,7 +35,7 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   console.log('UPLOAD RESULTS:\n', await uploadResponse.json());
 
   // IMPORTING THE FILE
-  const importResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_QoolPrism', {
+  const importResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer ' + authToken,
