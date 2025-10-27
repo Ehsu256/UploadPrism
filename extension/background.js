@@ -1,3 +1,13 @@
+chrome.runtime.onStartup.addListener(checkServerStatus);
+
+
+
+async function checkServerStatus() {
+  
+}
+
+
+
 // PREPARING FILE FOR UPLOAD
 chrome.contextMenus.onClicked.addListener(async (info) => {
   // Fetching the right-clicked file
