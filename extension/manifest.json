@@ -5,10 +5,10 @@
   "version": "0.1",
   "description": "Upload images and videos to your PhotoPrism server. (https://github.com/photoprism/photoprism)",
   "icons": {
-    "16": "icons/icon-16px.png"
+    "128": "icons/icon128.png"
   },
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "background.js"
