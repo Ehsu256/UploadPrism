@@ -4,7 +4,7 @@ const serverInfoForm = document.getElementById('serverInfoForm');
 serverInfoForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  // Get info from fomr
+  // Get info from form
   const photoprismUrl = document.getElementById('photoprismUrl').value;
   const authToken = document.getElementById('authToken').value;
   const serverInfo = {
@@ -15,61 +15,49 @@ serverInfoForm.addEventListener('submit', async (event) => {
   // Getting user UID
   const response = await fetch(photoprismUrl+'/api/v1/session', {
     method: 'GET',
-    headers: {
-      'Authorization': 'Bearer ' + authToken
-    }
+    headers: { 'Authorization': 'Bearer ' + authToken }
   });
   const session = await response.json();
   const userUid = session.user.UID;
   serverInfo["userUid"] = userUid;
 
   // Saving info to local storage
-  chrome.storage.local.set({ serverInfo: serverInfo })
-    .then(createContextMenus(serverInfo));
+  await chrome.storage.local.set({ serverInfo: serverInfo });
+
+  createContextMenu(serverInfo);
 });
 
 
 // CREATE CONTEXT MENUS
-async function createContextMenus(serverInfo) {
-  console.log('Create context menus');
-  await chrome.contextMenus.removeAll();
-  
-  // Option to uploaded with no specified album
-  // They get merged into one parent because they share contexts
+async function createContextMenu(serverInfo) {
   chrome.contextMenus.create({
     title: 'Upload to PhotoPrism',
     contexts: ['image', 'video'],
-    id: 'mediaContextMenu'
+    id: 'contextMenuParent'
   }, catchContextMenuError);
 
-  // Parent option for albums
-  // Note that in the sample.js they make this file with a let instead of a const
-  const albumsParent = chrome.contextMenus.create({
-    title: 'Upload to album',
-    // contexts: ['image', 'video'],
-    id: 'albumsParent'
+  chrome.contextMenus.create({
+    title: 'Upload without album',
+    contexts: ['image', 'video'],
+    parentId: 'contextMenuParent',
+    id: ''
   }, catchContextMenuError);
 
   // Getting albums
-  const { photoprismUrl, authToken } = serverInfo.photoprismUrl;
+  const { photoprismUrl, authToken } = serverInfo;
   const albumsResponse = await fetch(photoprismUrl+'/api/v1/albums?count=100000&type=album&order=title', {
     method: 'GET',
-    headers: {
-      "Authorization": 'Bearer ' + authToken
-    }
+    headers: { "Authorization": 'Bearer ' + authToken }
   });
   const albums = await albumsResponse.json();
 
-  // Doesn't work
+  // Creating a context menu for each album
   for (let i = 0; i < albums.length; i++) {
-    console.log('Creating context menu for: ' + albums[i].Title);
-    const albumTitle = albums[i].Title;
-    const albumUid = albums[i].UID;
-
     chrome.contextMenus.create({
-      title: albumTitle,
-      parentId: albumsParent,
-      id: albumUid
+      title: albums[i].Title,
+      contexts: ['image', 'video'],
+      parentId: 'contextMenuParent',
+      id: albums[i].UID
     }, catchContextMenuError);
   }
 }
