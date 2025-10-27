@@ -51,8 +51,7 @@ async function createContextMenus(serverInfo) {
   }, catchContextMenuError);
 
   // Getting albums
-  const photoprismUrl = serverInfo.photoprismUrl;
-  const authToken = serverInfo.authToken;
+  const { photoprismUrl, authToken } = serverInfo.photoprismUrl;
   const albumsResponse = await fetch(photoprismUrl+'/api/v1/albums?count=100000&type=album&order=title', {
     method: 'GET',
     headers: {
@@ -60,19 +59,17 @@ async function createContextMenus(serverInfo) {
     }
   });
   const albums = await albumsResponse.json();
-  chrome.contextMenus.create({
-    title: albums[0].Title,
-    parentId: albumsParent,
-    id: albums[0].UID
-  });
-  
+
   // Doesn't work
   for (let i = 0; i < albums.length; i++) {
     console.log('Creating context menu for: ' + albums[i].Title);
+    const albumTitle = albums[i].Title;
+    const albumUid = albums[i].UID;
+
     chrome.contextMenus.create({
-      title: albums[i].Title,
+      title: albumTitle,
       parentId: albumsParent,
-      id: albums[i].UID
+      id: albumUid
     }, catchContextMenuError);
   }
 }
