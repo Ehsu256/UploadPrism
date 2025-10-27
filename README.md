@@ -9,6 +9,8 @@ Browser extension for uploading images and videos from the internet to your Phot
 5. Click on the "Load unpacked" that appears after the previous step.
 6. Select the folder named "extension" from the decompressed file.
 
+Alternatively you can clone the repository and load the "extension" folder (which could have more features and changes than the release version), however this comes with a higher risk of having an unstable version with bugs or that may not even work.
+
 ## How to use
 1. Click on the extension icon.
 2. Fill the form with the URL of your PhotoPrism instance and an authentication token - [how to get authentication token](https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices).
