@@ -1,7 +1,5 @@
 // PREPARING FILE FOR UPLOAD
 chrome.contextMenus.onClicked.addListener(async (info) => {
-  setIcon('processing');
-
   // Fetching the right-clicked file
   const fileUrl = info.srcUrl;
   const response = await fetch(fileUrl);
@@ -16,12 +14,17 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   const formData = new FormData();
   formData.append('files', fileObject);
 
-  uploadFile(formData);
+  // Taking the ID of the context menu item clicked (wich is the respective album's UID)
+  const albumUid = info.menuItemId;
+
+  // Start upload sequence
+  setIcon('processing');
+  uploadFile(formData, albumUid);
 });
 
 
 // UPOLOADING FILE
-async function uploadFile(formData) {
+async function uploadFile(formData, albumUid) {
   // Retrieving server info from local storage
   const serverInfo = await chrome.storage.local.get(['serverInfo']);
   const { photoprismUrl, authToken, userUid } = serverInfo.serverInfo; // Object destructuring
@@ -45,7 +48,7 @@ async function uploadFile(formData) {
         'Connection': 'keep-alive',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ albums: [] })
+      body: JSON.stringify({ albums: [albumUid] })
     });
 
     if ((await uploadResponse.json()).code == 200 && (await importResponse.json()).code == 200) {
@@ -70,26 +73,27 @@ function setIcon(uploadStatus) {
       chrome.action.setIcon({
         path: "icons/icon128-success.png"
       });
-      setToDefault();
+      setIconToDefault();
       break;
     case 'error':
       chrome.action.setIcon({
         path: "icons/icon128-error.png"
       });
-      setToDefault();
+      setIconToDefault();
       break;
   
     default:
       console.log("Unknown case, setting icon to default");
-      setToDefault();
+      setIconToDefault();
       break;
   }
+}
 
-  function setToDefault() {
-    setTimeout(() => {
-      chrome.action.setIcon({
-        path: "icons/icon128.png"
-      })
-    }, 3000);
-  }
+// Reset icon after 3 seconds from previous change
+function setIconToDefault() {
+  setTimeout(() => {
+    chrome.action.setIcon({
+      path: "icons/icon128.png"
+    })
+  }, 3000);
 }
