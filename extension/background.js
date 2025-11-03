@@ -1,46 +1,80 @@
-chrome.runtime.onStartup.addListener(checkServerStatus);
-
-
-
-async function checkServerStatus() {
+// chrome.runtime.onStartup.addListener(checkServerStatus);
+chrome.runtime.onMessage.addListener((message) => {
+  const serverInfo = {
+    photoprismUrl: message.photoprismUrl,
+    authToken: message.authToken
+  };
   
+  checkServerStatus(serverInfo);
+});
+
+
+async function checkServerStatus(serverInfo) {
+  const { photoprismUrl, authToken } = serverInfo;
+  
+  try {
+    const statusResponse = await fetch(photoprismUrl+'/api/v1/status', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + authToken,
+        'Connection': 'keep-alive'
+      }
+    });
+    const serverStatus = (await statusResponse.json()).status;
+
+    if (serverStatus == 'operational') {
+      setIcon('operational');
+      getUserUid(serverInfo);
+      createContextMenus(serverInfo);
+    }
+  } catch (error) {
+    setIcon('nonoperational');
+    console.log('Error when checking server status: ' + error);
+  }
 }
 
 
+async function getUserUid(serverInfo) {
+  const { photoprismUrl, authToken } = serverInfo;
 
-// PREPARING FILE FOR UPLOAD
+  // Get user UID required for upload
+  const sessionResponse = await fetch(photoprismUrl+'/api/v1/session', {
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + authToken }
+  });
+  const session = await sessionResponse.json();
+  serverInfo.userUid = session.user.UID;
+  
+  await chrome.storage.local.set({ serverInfo: serverInfo });
+}
+
+
+// Prepare file for upload
 chrome.contextMenus.onClicked.addListener(async (info) => {
-  // Fetching the right-clicked file
+  setIcon('processing');
+
   const fileUrl = info.srcUrl;
   const response = await fetch(fileUrl);
   const blob = await response.blob();
 
-  // Naming the file with the correct extension to prevent "unsupported file extension" error in PhotoPrism
-  const fileExtension = blob.type.split('/')[1]; // Getting the file extension from MIME type
+  // Provide file with correct extension to prevent "unsupported file extension" error in PhotoPrism
+  const fileExtension = blob.type.split('/')[1]; // Get the file extension from MIME type
   const fileName = 'UploadPrism.' + fileExtension;
   const fileObject = new File([blob], fileName, { type: blob.type });
 
-  // Creating FormData and appending the File object
   const formData = new FormData();
   formData.append('files', fileObject);
-
-  // Taking the ID of the context menu item clicked (wich is the respective album's UID)
   const albumUid = info.menuItemId;
 
-  // Start upload sequence
-  setIcon('processing');
   uploadFile(formData, albumUid);
 });
 
-
-// UPOLOADING FILE
 async function uploadFile(formData, albumUid) {
-  // Retrieving server info from local storage
   const serverInfo = await chrome.storage.local.get(['serverInfo']);
-  const { photoprismUrl, authToken, userUid } = serverInfo.serverInfo; // Object destructuring
+  const { photoprismUrl, authToken, userUid } = serverInfo.serverInfo;
 
+  // Use POST and then PUT in order for the image to appear in library
   try {
-    // Uploading image with POST
     const uploadResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
       method: 'POST',
       headers: {
@@ -49,19 +83,19 @@ async function uploadFile(formData, albumUid) {
       },
       body: formData
     });
-
-    // Importing image with PUT
     const importResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
       method: 'PUT',
       headers: {
         'Authorization': 'Bearer ' + authToken,
-        'Connection': 'keep-alive',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ albums: [albumUid] })
     });
 
-    if ((await uploadResponse.json()).code == 200 && (await importResponse.json()).code == 200) {
+    const uploadStatus = (await uploadResponse.json()).code;
+    const importStatus = (await importResponse.json()).code;
+
+    if (uploadStatus == 200 && importStatus == 200) {
       setIcon('success');
     }
   } catch (error) {
@@ -71,7 +105,8 @@ async function uploadFile(formData, albumUid) {
 }
 
 
-// ICON CHANGES - processing, success, error
+// Possible parameters:
+// processing, success, error, operational, nonoperational
 function setIcon(uploadStatus) {
   switch (uploadStatus) {
     case 'processing':
@@ -91,6 +126,18 @@ function setIcon(uploadStatus) {
       });
       setIconToDefault();
       break;
+    case 'operational':
+      chrome.action.setIcon({
+        path: "icons/icon128-operational.png"
+      });
+      setIconToDefault();
+      break;
+    case 'nonoperational':
+      chrome.action.setIcon({
+        path: "icons/icon128-nonoperational.png"
+      });
+      setIconToDefault();
+      break;
   
     default:
       console.log("Unknown case, setting icon to default");
@@ -99,11 +146,49 @@ function setIcon(uploadStatus) {
   }
 }
 
-// Reset icon after 3 seconds from previous change
 function setIconToDefault() {
   setTimeout(() => {
     chrome.action.setIcon({
       path: "icons/icon128.png"
     })
-  }, 3000);
+  }, 5000);
+}
+
+
+async function createContextMenus(serverInfo) {
+  chrome.contextMenus.create({
+    title: 'Upload to PhotoPrism',
+    contexts: ['image', 'video'],
+    id: 'contextMenuParent'
+  }, catchContextMenuError);
+
+  chrome.contextMenus.create({
+    title: 'Upload without album',
+    contexts: ['image', 'video'],
+    parentId: 'contextMenuParent',
+    id: ''
+  }, catchContextMenuError);
+
+  const { photoprismUrl, authToken } = serverInfo;
+  const albumsResponse = await fetch(photoprismUrl+'/api/v1/albums?count=100000&type=album&order=title', {
+    method: 'GET',
+    headers: { "Authorization": 'Bearer ' + authToken }
+  });
+  const albums = await albumsResponse.json();
+
+  for (let i = 0; i < albums.length; i++) {
+    chrome.contextMenus.create({
+      title: albums[i].Title,
+      contexts: ['image', 'video'],
+      parentId: 'contextMenuParent',
+      id: albums[i].UID
+    }, catchContextMenuError);
+  }
+}
+
+// Catch error if context menu already exist
+function catchContextMenuError() {
+  if (chrome.runtime.lastError) {
+    console.log('Error trying to create context menu: ' + chrome.runtime.lastError.message);
+  }
 }
