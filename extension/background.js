@@ -1,37 +1,10 @@
-// chrome.runtime.onStartup.addListener(checkServerStatus);
-chrome.runtime.onMessage.addListener((message) => {
-  const serverInfo = {
-    photoprismUrl: message.photoprismUrl,
-    authToken: message.authToken
-  };
+chrome.runtime.onMessage.addListener(async () => {
+  const serverInfo = (await chrome.storage.local.get(['serverInfo'])).serverInfo;
   
-  checkServerStatus(serverInfo);
+  setIcon('operational');
+  getUserUid(serverInfo);
+  createContextMenus(serverInfo);
 });
-
-
-async function checkServerStatus(serverInfo) {
-  const { photoprismUrl, authToken } = serverInfo;
-  
-  try {
-    const statusResponse = await fetch(photoprismUrl+'/api/v1/status', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + authToken,
-        'Connection': 'keep-alive'
-      }
-    });
-    const serverStatus = (await statusResponse.json()).status;
-
-    if (serverStatus == 'operational') {
-      setIcon('operational');
-      getUserUid(serverInfo);
-      createContextMenus(serverInfo);
-    }
-  } catch (error) {
-    setIcon('nonoperational');
-    console.log('Error when checking server status: ' + error);
-  }
-}
 
 
 async function getUserUid(serverInfo) {
@@ -70,8 +43,8 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
 });
 
 async function uploadFile(formData, albumUid) {
-  const serverInfo = await chrome.storage.local.get(['serverInfo']);
-  const { photoprismUrl, authToken, userUid } = serverInfo.serverInfo;
+  const serverInfo = (await chrome.storage.local.get(['serverInfo'])).serverInfo;
+  const { photoprismUrl, authToken, userUid } = serverInfo;
 
   // Use POST and then PUT in order for the image to appear in library
   try {
