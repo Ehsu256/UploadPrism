@@ -4,20 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UploadPrism</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div>
+  <header>
+    <div class="logo-space">
+      <img src="icons/icon128.png" alt="UploadPrism Logo" width="48" height="48">
+    </div>
     <h1>UploadPrism</h1>
-
-    <form id="serverInfoForm">
-      <label>Photoprism URL</label>
-      <input type="text" id="photoprismUrl" placeholder="http://127.0.0.1:2342" required>
-      <label>Authentication token</label>
-      <a href="https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices">How to get token?</a>
-      <input type="password" id="authToken" placeholder="a1b2c3-a1b2c3-a1b2c3-a1b2c3" required>
-      <button>Connect</button>
-    </form>
-  </div>
+  </header>
+  <form id="serverInfoForm">
+    <label>Photoprism URL</label>
+    <input type="text" id="photoprismUrl" placeholder="http://127.0.0.1:2342" required>
+    <label>
+      Authentication token.
+      <a href="https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices" target="_blank">
+        How to get token
+      </a>
+    </label>
+    <input type="password" id="authToken" placeholder="a1b2c3-a1b2c3-a1b2c3-a1b2c3" required>
+    <button>Connect</button>
+  </form>
+  <p id="serverStatusParagraph"></p>
   <script src="popup.js"></script>
 </body>
 </html>
