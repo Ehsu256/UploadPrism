@@ -14,6 +14,8 @@ Alternatively you can clone the repository and load the "extension" folder (whic
 ## How to use
 1. Click on the extension icon
 2. Fill the form with the URL of your PhotoPrism instance and an authentication token - [how to get authentication token](https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices)
-3. Click the "Connect" button
+3. Click the "Connect" button <br>
+<img height="300" alt="interface_v3-alpha" src="https://github.com/user-attachments/assets/b4bb6543-a85f-4d39-850a-1b50c0a38e69" /> <br>
 4. Right-click an internet image or video, a button that says "Upload to PhotoPrism" should appear (note that some websites will not allow this button to appear, disabling the possibility of uploading it)
-5. Click on the "Upload to PhotoPrism" button and the image/video should appear in your library after a few seconds
+5. Click on the "Upload to PhotoPrism" button and the image/video should appear in your library after a few seconds <br>
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/5d36b645-a632-43f2-87ab-0c39eb7e1a3c" />
