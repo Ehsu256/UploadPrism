@@ -1,35 +1,19 @@
-// chrome.runtime.onStartup.addListener(checkServerStatus);
-chrome.runtime.onMessage.addListener((message) => {
-  const serverInfo = {
-    photoprismUrl: message.photoprismUrl,
-    authToken: message.authToken
-  };
-  
-  checkServerStatus(serverInfo);
-});
+// Message from form submittion
+chrome.runtime.onMessage.addListener(checkServerStatus);
 
-
-async function checkServerStatus(serverInfo) {
-  const { photoprismUrl, authToken } = serverInfo;
-  
+async function checkServerStatus(message) {
+  const { serverInfo } = message;
   try {
-    const statusResponse = await fetch(photoprismUrl+'/api/v1/status', {
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer ' + authToken,
-        'Connection': 'keep-alive'
-      }
-    });
-    const serverStatus = (await statusResponse.json()).status;
-
-    if (serverStatus == 'operational') {
+    const statusResponse = await fetch(serverInfo.photoprismUrl+'/api/v1/status');
+    if (statusResponse.status === 200) {
+      await getUserUid(serverInfo);
+      await createContextMenus(serverInfo);
       setIcon('operational');
-      getUserUid(serverInfo);
-      createContextMenus(serverInfo);
+      chrome.runtime.sendMessage({ serverStatus: 'operational' });
     }
   } catch (error) {
     setIcon('nonoperational');
-    console.log('Error when checking server status: ' + error);
+    chrome.runtime.sendMessage({ serverStatus: 'nonoperational' });
   }
 }
 
@@ -45,7 +29,7 @@ async function getUserUid(serverInfo) {
   const session = await sessionResponse.json();
   serverInfo.userUid = session.user.UID;
   
-  await chrome.storage.local.set({ serverInfo: serverInfo });
+  chrome.storage.local.set({ serverInfo: serverInfo });
 }
 
 
@@ -53,25 +37,24 @@ async function getUserUid(serverInfo) {
 chrome.contextMenus.onClicked.addListener(async (info) => {
   setIcon('processing');
 
-  const fileUrl = info.srcUrl;
-  const response = await fetch(fileUrl);
-  const blob = await response.blob();
+  const albumUid = info.menuItemId;
+  const urlResponse = await fetch(info.srcUrl); // Media to upload
+  const blob = await urlResponse.blob();
 
-  // Provide file with correct extension to prevent "unsupported file extension" error in PhotoPrism
-  const fileExtension = blob.type.split('/')[1]; // Get the file extension from MIME type
-  const fileName = 'UploadPrism.' + fileExtension;
-  const fileObject = new File([blob], fileName, { type: blob.type });
+  // Provide file with correct extension to prevent
+  // "unsupported file extension" error in PhotoPrism
+  const fileExtension = blob.type.split('/')[1]; // Get file extension from MIME type
+  const fileObject = new File([blob], 'UploadPrism.' + fileExtension, { type: blob.type });
 
   const formData = new FormData();
   formData.append('files', fileObject);
-  const albumUid = info.menuItemId;
 
   uploadFile(formData, albumUid);
 });
 
 async function uploadFile(formData, albumUid) {
-  const serverInfo = await chrome.storage.local.get(['serverInfo']);
-  const { photoprismUrl, authToken, userUid } = serverInfo.serverInfo;
+  const serverInfo = (await chrome.storage.local.get(['serverInfo'])).serverInfo;
+  const { photoprismUrl, authToken, userUid } = serverInfo;
 
   // Use POST and then PUT in order for the image to appear in library
   try {
@@ -83,6 +66,7 @@ async function uploadFile(formData, albumUid) {
       },
       body: formData
     });
+
     const importResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
       method: 'PUT',
       headers: {
@@ -97,9 +81,10 @@ async function uploadFile(formData, albumUid) {
 
     if (uploadStatus == 200 && importStatus == 200) {
       setIcon('success');
+    } else {
+      setIcon('error');
     }
   } catch (error) {
-    console.log("Error when trying to upload/import media", error);
     setIcon('error');
   }
 }
