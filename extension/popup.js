@@ -7,8 +7,7 @@ document.getElementById('serverInfoForm').addEventListener('submit', async (even
   const photoprismUrl = document.getElementById('photoprismUrl').value;
   const authToken = document.getElementById('authToken').value;
 
-  // Send message to background to check the
-  // status of the server if given info is correct
+  // Send message to background to check the status of the server if given info is correct
   chrome.runtime.sendMessage({
     serverInfo: { photoprismUrl, authToken },
   });
