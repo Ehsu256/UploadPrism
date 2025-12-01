@@ -4,7 +4,7 @@ chrome.runtime.onMessage.addListener(checkServerStatus);
 async function checkServerStatus(message) {
   const { serverInfo } = message;
   try {
-    const statusResponse = await fetch(serverInfo.photoprismUrl+'/api/v1/status');
+    const statusResponse = await fetch(`${serverInfo.photoprismUrl}/api/v1/status`);
     if (statusResponse.status === 200) {
       await getUserUid(serverInfo);
       await createContextMenus(serverInfo);
@@ -22,9 +22,9 @@ async function getUserUid(serverInfo) {
   const { photoprismUrl, authToken } = serverInfo;
 
   // Get user UID required for upload
-  const sessionResponse = await fetch(photoprismUrl+'/api/v1/session', {
+  const sessionResponse = await fetch(`${photoprismUrl}/api/v1/session`, {
     method: 'GET',
-    headers: { 'Authorization': 'Bearer ' + authToken }
+    headers: { 'Authorization': `Bearer ${authToken}` }
   });
   const session = await sessionResponse.json();
   serverInfo.userUid = session.user.UID;
@@ -34,17 +34,21 @@ async function getUserUid(serverInfo) {
 
 
 // Prepare file for upload
-chrome.contextMenus.onClicked.addListener(async (info) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   setIcon('processing');
+
+  // Remove special characters from tab title so it can be used for the media title
+  // Taken from GPT-5 mini
+  const fileTitle = tab.title.replace(/[^\p{L}\p{N}\s]/gu, "");
 
   const albumUid = info.menuItemId;
   const urlResponse = await fetch(info.srcUrl); // Media to upload
   const blob = await urlResponse.blob();
 
-  // Provide file with correct extension to prevent
+  // Provide file name with correct extension to prevent
   // "unsupported file extension" error in PhotoPrism
   const fileExtension = blob.type.split('/')[1]; // Get file extension from MIME type
-  const fileObject = new File([blob], 'UploadPrism.' + fileExtension, { type: blob.type });
+  const fileObject = new File([blob], `${fileTitle}.${fileExtension}`, { type: blob.type });
 
   const formData = new FormData();
   formData.append('files', fileObject);
@@ -58,19 +62,19 @@ async function uploadFile(formData, albumUid) {
 
   // Use POST and then PUT in order for the image to appear in library
   try {
-    const uploadResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
+    const uploadResponse = await fetch(`${photoprismUrl}/api/v1/users/${userUid}/upload/_UploadPrism`, {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + authToken,
+        'Authorization': `Bearer ${authToken}`,
         'Connection': 'keep-alive'
       },
       body: formData
     });
 
-    const importResponse = await fetch(photoprismUrl+'/api/v1/users/'+userUid+'/upload/_UploadPrism', {
+    const importResponse = await fetch(`${photoprismUrl}/api/v1/users/${userUid}/upload/_UploadPrism`, {
       method: 'PUT',
       headers: {
-        'Authorization': 'Bearer ' + authToken,
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ albums: [albumUid] })
@@ -96,36 +100,36 @@ function setIcon(uploadStatus) {
   switch (uploadStatus) {
     case 'processing':
       chrome.action.setIcon({
-        path: "icons/icon128-processing.png"
+        path: 'icons/icon128-processing.png'
       });
       break;
     case 'success':
       chrome.action.setIcon({
-        path: "icons/icon128-success.png"
+        path: 'icons/icon128-success.png'
       });
       setIconToDefault();
       break;
     case 'error':
       chrome.action.setIcon({
-        path: "icons/icon128-error.png"
+        path: 'icons/icon128-error.png'
       });
       setIconToDefault();
       break;
     case 'operational':
       chrome.action.setIcon({
-        path: "icons/icon128-operational.png"
+        path: 'icons/icon128-operational.png'
       });
       setIconToDefault();
       break;
     case 'nonoperational':
       chrome.action.setIcon({
-        path: "icons/icon128-nonoperational.png"
+        path: 'icons/icon128-nonoperational.png'
       });
       setIconToDefault();
       break;
   
     default:
-      console.log("Unknown case, setting icon to default");
+      console.log('Unknown case, setting icon to default');
       setIconToDefault();
       break;
   }
@@ -134,7 +138,7 @@ function setIcon(uploadStatus) {
 function setIconToDefault() {
   setTimeout(() => {
     chrome.action.setIcon({
-      path: "icons/icon128.png"
+      path: 'icons/icon128.png'
     })
   }, 5000);
 }
@@ -154,10 +158,10 @@ async function createContextMenus(serverInfo) {
     id: ''
   }, catchContextMenuError);
 
-  const { photoprismUrl, authToken } = serverInfo;
-  const albumsResponse = await fetch(photoprismUrl+'/api/v1/albums?count=100000&type=album&order=title', {
+  const { photoprismUrl, authToken } = serverInfo; 
+  const albumsResponse = await fetch(`${photoprismUrl}/api/v1/albums?count=100000&type=album&order=title`, {
     method: 'GET',
-    headers: { "Authorization": 'Bearer ' + authToken }
+    headers: { "Authorization": `Bearer ${authToken}` }
   });
   const albums = await albumsResponse.json();
 
@@ -174,6 +178,6 @@ async function createContextMenus(serverInfo) {
 // Catch error if context menu already exist
 function catchContextMenuError() {
   if (chrome.runtime.lastError) {
-    console.log('Error trying to create context menu: ' + chrome.runtime.lastError.message);
+    console.log(`Error trying to create context menu: ${chrome.runtime.lastError.message}`);
   }
 }
