@@ -17,6 +17,6 @@ Alternatively you can clone the repository and load the "extension" folder (whic
 3. Click the "Connect" button <br>
 <img height="300" alt="interface_v3-alpha" src="https://github.com/user-attachments/assets/b4bb6543-a85f-4d39-850a-1b50c0a38e69" /> <br>
 4. Right-click an internet image or video, a button that says "Upload to PhotoPrism" should appear
-  - Note that some websites will not allow this button to appear and thus you can't upload the media. There is currently a WIP feature to tackle this for some websites once it's added
+    - Note that some websites will not allow this button to appear and thus you can't upload the media. There is currently a WIP feature to tackle this for some websites once it's added
 5. Click on the "Upload to PhotoPrism" button and the image/video should appear in your library after a few seconds <br>
 <img width="300" alt="image" src="https://github.com/user-attachments/assets/5d36b645-a632-43f2-87ab-0c39eb7e1a3c" />
