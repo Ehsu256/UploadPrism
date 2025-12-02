@@ -22,7 +22,7 @@ header{
   gap:.75rem;
   padding:1rem;
   border-bottom:1px solid var(--border);
-  background:var(--panel);
+  background:#212121;
 }
 .logo-space{
   width:48px;
@@ -30,14 +30,6 @@ header{
   background:transparent;
   border-radius:6px;
   flex-shrink:0;
-}
-.serverStatusDiv{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:1rem;
-  border-top:1px solid var(--border);
-  background:var(--panel);
 }
 h1{
   font-size:2.2rem;
@@ -86,4 +78,25 @@ p{
   color:var(--text-dim);
   text-align: center;
   margin: 0;
+}
+.status-box{
+  padding:.5rem .75rem;
+  background:#212121;
+  border:1px solid var(--border);
+  border-radius:6px;
+  max-width:268px;
+  margin:0 auto 1rem auto;
+  margin-bottom:22px;
+}
+.divider{
+  height:3px;
+  background:#212121;
+  margin:0 1rem;
+}
+.input-button-group{
+  display:flex;
+  gap:.5rem;
+}
+.input-button-group input{
+  flex:1;
 }

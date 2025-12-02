@@ -102,45 +102,46 @@ function setIcon(uploadStatus) {
       chrome.action.setIcon({
         path: 'icons/icon128-processing.png'
       });
+      setIconToDefault(10000);
       break;
     case 'success':
       chrome.action.setIcon({
         path: 'icons/icon128-success.png'
       });
-      setIconToDefault();
+      setIconToDefault(5000);
       break;
     case 'error':
       chrome.action.setIcon({
         path: 'icons/icon128-error.png'
       });
-      setIconToDefault();
+      setIconToDefault(10000);
       break;
     case 'operational':
       chrome.action.setIcon({
         path: 'icons/icon128-operational.png'
       });
-      setIconToDefault();
+      setIconToDefault(5000);
       break;
     case 'nonoperational':
       chrome.action.setIcon({
         path: 'icons/icon128-nonoperational.png'
       });
-      setIconToDefault();
+      setIconToDefault(10000);
       break;
   
     default:
       console.log('Unknown case, setting icon to default');
-      setIconToDefault();
+      setIconToDefault(1);
       break;
   }
 }
 
-function setIconToDefault() {
+function setIconToDefault(time) {
   setTimeout(() => {
     chrome.action.setIcon({
       path: 'icons/icon128.png'
     })
-  }, 5000);
+  }, time);
 }
 
 

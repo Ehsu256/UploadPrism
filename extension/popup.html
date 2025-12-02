@@ -13,20 +13,30 @@
     </div>
     <h1>UploadPrism</h1>
   </header>
-  <form id="serverInfoForm">
-    <label>Photoprism URL</label>
-    <input type="text" id="photoprismUrl" placeholder="http://127.0.0.1:2342" required>
-    <label>
-      Authentication token.
-      <a href="https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices" target="_blank">
-        How to get token
-      </a>
-    </label>
-    <input type="password" id="authToken" placeholder="a1b2c3-a1b2c3-a1b2c3-a1b2c3" required>
-    <button id="connectButton">Connect</button>
-  </form>
-  <div class="serverStatusDiv">
-    <p id="serverStatusText">Please provide your PhotoPrism information</p>
+  <div>
+    <form id="serverInfoForm">
+      <label>Photoprism URL</label>
+      <input type="text" id="photoprismUrl" placeholder="http://127.0.0.1:2342" required>
+      <label>
+        Authentication token.
+        <a href="https://docs.photoprism.app/user-guide/settings/account/#apps-and-devices" target="_blank">
+          How to get token
+        </a>
+      </label>
+      <input type="password" id="authToken" placeholder="a1b2c3-a1b2c3-a1b2c3-a1b2c3" required>
+      <button id="connectButton">Connect</button>
+    </form>
+    <div class="status-box">
+      <p id="serverStatusText">Provide your PhotoPrism information</p>
+    </div>
+    <div class="divider"></div>
+    <form id="mediaLinkForm">
+      <label>Upload with URL (WIP)</label>
+      <div class="input-button-group">
+        <input type="text" id="mediaUrl" placeholder="Paste media URL">
+        <button type="submit" id="sendButton">Upload</button>
+      </div>
+    </form>
   </div>
   <script src="popup.js"></script>
 </body>
